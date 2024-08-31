@@ -19,7 +19,7 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        txt = font.render(str(tmr), False, WHITE)
+        txt = font.render(str(tmr), True, WHITE)
         screen.fill(BLACK)
         screen.blit(txt, [300, 200])
         pygame.display.update()
