@@ -20,7 +20,7 @@ def make_maze():
     for x in range(MAZE_W):
         maze[0][x] = 1
         maze[MAZE_H-1][x] = 1
-    for y in range(MAZE_H):
+    for y in range(1, MAZE_H-1):
         maze[y][0] = 1
         maze[y][MAZE_W-1] = 1
 

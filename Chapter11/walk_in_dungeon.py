@@ -3,8 +3,6 @@ import sys
 import random
 
 BLACK = (0, 0, 0)
-CYAN = (0, 255, 255)
-GRAY = (96, 96, 96)
 
 MAZE_W = 11
 MAZE_H = 9
@@ -20,6 +18,10 @@ for y in range(DUNGEON_H):
 
 imgWall = pygame.image.load("image/wall.png")
 imgFloor = pygame.image.load("image/floor.png")
+imgPlayer = pygame.image.load("image/player.png")
+
+pl_x = 4
+pl_y = 4
 
 def make_dungeon(): #ダンジョンの自動生成
     XP = [0, 1, 0, -1]
@@ -73,10 +75,42 @@ def make_dungeon(): #ダンジョンの自動生成
                     if maze[y][x+1] == 0:
                         dungeon[dy][dx+1] = 0
 
+def draw_dungeon(bg): #ダンジョンを描画する
+    bg.fill(BLACK)
+    for y in range(-5, 6):
+        for x in range(-5, 6):
+            X = (x+5)*16
+            Y = (y+5)*16
+            dx = pl_x + x
+            dy = pl_y + y
+            if 0 <= dx and dx < DUNGEON_W and 0 <= dy and dy < DUNGEON_H:
+                if dungeon[dy][dx] == 0:
+                    bg.blit(imgFloor, [X, Y])
+                if dungeon[dy][dx] == 9:
+                    bg.blit(imgWall, [X, Y])
+            if x == 0 and y == 0: #主人公の表示
+                bg.blit(imgPlayer, [X, Y-8]) #player.pngの高さは24pxで8px高い
+                
+def move_player(): #主人公の移動
+    global pl_x, pl_y
+    key = pygame.key.get_pressed()
+    if key[pygame.K_UP] == 1:
+        if dungeon[pl_y-1][pl_x] != 9:
+            pl_y = pl_y - 1
+    if key[pygame.K_DOWN] == 1:
+        if dungeon[pl_y+1][pl_x] != 9:
+            pl_y = pl_y + 1
+    if key[pygame.K_LEFT] == 1:
+        if dungeon[pl_y][pl_x-1] != 9:
+            pl_x = pl_x - 1
+    if key[pygame.K_RIGHT] == 1:
+        if dungeon[pl_y][pl_x+1] != 9:
+            pl_x = pl_x + 1
+
 def main():
     pygame.init()
-    pygame.display.set_caption("ダンジョンを作る")
-    screen = pygame.display.set_mode((1056, 432))
+    pygame.display.set_caption("ダンジョン内を歩く")
+    screen = pygame.display.set_mode((176, 176))
     clock = pygame.time.Clock()
 
     make_dungeon()
@@ -86,32 +120,11 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    make_dungeon()
 
-        #確認用の迷路を表示
-        for y in range(MAZE_H):
-            for x in range(MAZE_W):
-                X = x*48
-                Y = y*48
-                if maze[y][x] == 0:
-                    pygame.draw.rect(screen, CYAN, [X, Y, 48, 48])
-                if maze[y][x] == 1:
-                    pygame.draw.rect(screen, GRAY, [X, Y, 48, 48])
-
-        #ダンジョンを描画する
-        for y in range(DUNGEON_H):
-            for x in range(DUNGEON_W):
-                X = x*16+528
-                Y = y*16
-                if dungeon[y][x] == 0:
-                    screen.blit(imgFloor, [X, Y])
-                if dungeon[y][x] == 9:
-                    screen.blit(imgWall, [X, Y])
-
+        move_player()
+        draw_dungeon(screen)
         pygame.display.update()
-        clock.tick(2)
+        clock.tick(5)
 
 if __name__ == '__main__':
     main()
