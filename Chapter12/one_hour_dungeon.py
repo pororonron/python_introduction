@@ -1,7 +1,8 @@
 import pygame
 import sys
 import random
-from pygame.locals import * 
+from pygame.locals import *
+import pygame.tests 
 
 #色の定義
 WHITE = (255, 255, 255)
@@ -95,3 +96,157 @@ dungeon = []
 for y in range(DUNGEON_H):
     dungeon.append([0]*DUNGEON_W)
 
+def make_dungeon(): # ダンジョンの自動生成
+    XP = [0, 1, 0, -1]
+    YP = [-1, 0, 1, 0]
+    # 周りの壁
+    for x in range(MAZE_W):
+        maze[0][x] = 1
+        maze[MAZE_H-1][x] = 1
+    for y in range(1, MAZE_H-1):
+        maze[y][0] = 1
+        maze[y][MAZE_W-1] = 1
+    # 中を何もない状態に
+    for y in range(1, MAZE_H-1):
+        for x in range(1, MAZE_W-1):
+            maze[y][x] = 0
+    # 柱
+    for y in range(2, MAZE_H-2, 2):
+        for x in range(2, MAZE_W-2, 2):
+            maze[y][x] = 1
+    # 柱から上下左右に壁を作る
+    for y in range(2, MAZE_H-2, 2):
+        for x in range(2, MAZE_W-2, 2):
+            d = random.randint(0, 3)
+            if x > 2: # 二列目からは左に壁を作らない
+                d = random.randint(0, 2)
+            maze[y+YP[d]][x+XP[d]] = 1
+
+    # 迷路からダンジョンを作る
+    # 全体を壁にする
+    for y in range(DUNGEON_H):
+        for x in range(DUNGEON_W):
+            dungeon[y][x] = 9
+    # 部屋と通路の配置
+    for y in range(1, MAZE_H-1):
+        for x in range(1, MAZE_W-1):
+            dx = x*3+1
+            dy = y*3+1
+            if maze[y][x] == 0:
+                if random.randint(0, 99) < 20: # 部屋を作る
+                    for ry in range(-1, 2):
+                        for rx in range(-1, 2):
+                            dungeon[dy+ry][dx+rx] == 0
+                else: # 通路を作る
+                    dungeon[dy][dx] == 0
+                    if maze[y-1][x] == 0:
+                        dungeon[dy-1][dx] = 0
+                    if maze[y+1][x] == 0:
+                        dungeon[dy+1][dx] = 0
+                    if maze[y][x-1] == 0:
+                        dungeon[dy][dx-1] = 0
+                    if maze[y][x+1] == 0:
+                        dungeon[dy][dx+1] = 0
+
+def put_event(): # 床にイベントを配置する
+    global pl_x, pl_y, pl_d, pl_a
+    # 階段の配置
+    while True:
+        x = random.randint(3, DUNGEON_W-4)
+        y = random.randint(3, DUNGEON_H-4)
+        if(dungeon[y][x] == 0):
+            for ry in range(-1, 2): # 階段の周囲を床にする
+                for rx in range(-1, 2):
+                    dungeon[y+ry][x+rx] = 0
+            dungeon[y][x] = 3
+            break
+    # 宝箱と繭の配置
+    for i in range(60):
+        x = random.randint(3, DUNGEON_W-4)
+        y = random.randint(3, DUNGEON_H-4)
+        if(dungeon[y][x] == 0):
+            dungeon[y][x] = random.choice({1, 2, 2, 2, 2})
+    # プレイヤーの初期位置
+    while True:
+        pl_x = random.randint(3, DUNGEON_W-4)
+        pl_y = random.randint(3, DUNGEON_H-4)
+        if(dungeon[pl_y][pl_x] == 0):
+            break
+        pl_d = 1
+        pl_a = 2
+
+def draw_text(bg, txt, x, y, fnt, col): # 影付き文字の表示
+    sur = fnt.render(txt, True, BLACK)
+    bg.blit(sur, [x+1, y+2])
+    sur = fnt.render(txt, True, col)
+    bg.blit(sur, [x, y])
+            
+def main():
+    global speed, idx, tmr, floor, fl_max, welcome
+    global pl_a, pl_lifemax, pl_life, pl_str, food, potion, blazegem
+    global emy_life, emy_step, emy_blink, dmg_eff
+    dmg = 0
+    lif_p = 0
+    str_p = 0
+
+    pygame.init()
+    pygame.display.set_caption("One hour Dungeon")
+    screen = pygame.display.set_mode((880, 720))
+    clock = pygame.time.Clock()
+    font = pygame.font.Font(None, 40)
+    fontS = pygame.font.Font(None, 30)
+
+    se = [ # 効果音とジングル
+        pygame.mixer.Sound("sound/ohd_se_attack.ogg"),
+        pygame.mixer.Sound("sound/ohd_se_blaze.ogg"),
+        pygame.mixer.Sound("sound/ohd_se_potion.ogg"),
+        pygame.mixer.Sound("sound/ohd_jin_gameover.ogg"),
+        pygame.mixer.Sound("sound/ohd_jin_levup.ogg"),
+        pygame.mixer.Sound("sound/ohd_jin_win.ogg")
+    ]
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_s:
+                    speed = speed + 1
+                    if speed == 4:
+                        speed = 1
+
+        tmr = tmr + 1
+        key = pygame.key.get_pressed()
+
+        if idx  == 0: # タイトル画面
+            if tmr == 1:
+                pygame.mixer.music.load("sound/ohd_bgm_title.ogg")
+                pygame.mixer.music.play(-1)
+            screen.fill(BLACK)
+            screen.blit(imgTitle, [40, 60])
+            if fl_max >= 2:
+                draw_text(screen, "You reached floor {}.".format(fl_max), 300, 460, font, CYAN)
+            draw_text(screen, "Press space key", 320, 560, font, BLINK[tmr%6])
+            if key[K_SPACE] == 1:
+                make_dungeon()
+                put_event()
+                floor = 1
+                welcome = 15
+                pl_lifemax = 300
+                pl_life = pl_lifemax
+                pl_str = 100
+                food = 300
+                potion = 0
+                blazegem = 0
+                idx = 1
+                pygame.mixer.music.load("sound/ohd_bgm_field.ogg")
+                pygame.mixer.music.play(-1)
+
+        draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
+    
+        pygame.display.update()
+        clock.tick(4+2*speed)
+
+if __name__ == '__main__':
+    main()
