@@ -175,6 +175,37 @@ def put_event(): # 床にイベントを配置する
         pl_d = 1
         pl_a = 2
 
+def move_player(): # 主人公の移動
+    global idx, tmr, pl_x, pl_y, pl_d, pl_a, pl_life, food, potion, blazegem, treasure
+
+    if dungeon[pl_y][pl_x] == 1: # 宝箱に乗った
+        dungeon[pl_y][pl_x] = 0
+        treasure = random.choice([0, 0, 0, 1, 1, 1, 1, 1, 1, 2])
+        if treasure == 0:
+            potion = potion + 1
+        if treasure == 1:
+            blazegem = blazegem + 1
+        if treasure == 2:
+            food = int(food/2)
+        idx = 3
+        tmr = 0
+        return
+    if dungeon[pl_y][pl_x] == 2: # 繭に乗った
+        dungeon[pl_y][pl_x] = 0
+        r = random.randint(0, 99)
+        if r < 40: # 食料
+            treasure = random.choice([3, 3, 3, 4])
+            if treasure == 3:
+                food = food + 20
+            if treasure == 4:
+                food = food + 100
+            idx = 3
+            tmr = 0
+        else: # 敵出現
+            idx = 10
+            tmr = 0
+        return
+
 def draw_text(bg, txt, x, y, fnt, col): # 影付き文字の表示
     sur = fnt.render(txt, True, BLACK)
     bg.blit(sur, [x+1, y+2])
@@ -219,7 +250,7 @@ def main():
         tmr = tmr + 1
         key = pygame.key.get_pressed()
 
-        if idx  == 0: # タイトル画面
+        if idx == 0: # タイトル画面
             if tmr == 1:
                 pygame.mixer.music.load("sound/ohd_bgm_title.ogg")
                 pygame.mixer.music.play(-1)
@@ -242,6 +273,9 @@ def main():
                 idx = 1
                 pygame.mixer.music.load("sound/ohd_bgm_field.ogg")
                 pygame.mixer.music.play(-1)
+
+        elif idx == 1: # プレイヤーの移動
+            move_player(key)
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
