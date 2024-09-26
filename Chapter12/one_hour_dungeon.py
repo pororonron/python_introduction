@@ -148,6 +148,19 @@ def make_dungeon(): # ダンジョンの自動生成
                     if maze[y][x+1] == 0:
                         dungeon[dy][dx+1] = 0
 
+def draw_dungeon(bg, fnt): # ダンジョンを描画する
+    bg.fill(BLACK)
+    for y in range(-4, 6):
+        for x in range(-5, 6):
+            X = (x+5)*80
+            Y = (y+4)*80
+            dx = pl_x + x
+            dy = pl_y + y
+            if 0 <= dx and dx < DUNGEON_W and 0 <= dy and dy < DUNGEON_H:
+                if dungeon[dy][dx] == 3:
+                    bg.blit(imgFloor[dungeon[dy][dx]], [X, Y])
+
+
 def put_event(): # 床にイベントを配置する
     global pl_x, pl_y, pl_d, pl_a
     # 階段の配置
@@ -175,7 +188,7 @@ def put_event(): # 床にイベントを配置する
         pl_d = 1
         pl_a = 2
 
-def move_player(): # 主人公の移動
+def move_player(key): # 主人公の移動
     global idx, tmr, pl_x, pl_y, pl_d, pl_a, pl_life, food, potion, blazegem, treasure
 
     if dungeon[pl_y][pl_x] == 1: # 宝箱に乗った
@@ -205,6 +218,44 @@ def move_player(): # 主人公の移動
             idx = 10
             tmr = 0
         return
+    if dungeon[pl_y][pl_x] == 3: # 階段に乗った
+        idx = 2
+        tmr = 0
+        return
+    
+    # 方向キーで上下左右に移動
+    x = pl_x
+    y = pl_y
+    if key[K_UP] == 1:
+        pl_d = 0
+        if dungeon[pl_y-1][pl_x] != 9:
+            pl_y = pl_y - 1
+    if key[K_DOWN] == 1:
+        pl_d = 1
+        if dungeon[pl_y+1][pl_x] != 9:
+            pl_y = pl_y + 1
+    if key[K_LEFT] == 1:
+        pl_d = 2
+        if dungeon[pl_y][pl_x-1] != 9:
+            pl_x = pl_x - 1
+    if key[K_RIGHT] == 1:
+        pl_d = 3
+        if dungeon[pl_y][pl_x+1] != 9:
+            pl_x = pl_x + 1
+    pl_a = pl_d*2
+    if pl_x != x or pl_y != y: # 移動したら食料の量と体力を計算
+        pl_a = pl_a + tmr%2 # 移動したら足踏みのアニメーション
+        if food > 0:
+            food = food - 1
+            if pl_life < pl_lifemax:
+                pl_life = pl_life + 1
+        else:
+            pl_life = pl_life - 5
+            if pl_life <= 0:
+                pl_life = 0
+                pygame.mixer.music.stop()
+                idx = 9
+                tmr = 0
 
 def draw_text(bg, txt, x, y, fnt, col): # 影付き文字の表示
     sur = fnt.render(txt, True, BLACK)
@@ -276,6 +327,7 @@ def main():
 
         elif idx == 1: # プレイヤーの移動
             move_player(key)
+            draw_dungeon(screen, fontS)
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
