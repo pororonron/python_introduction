@@ -159,6 +159,14 @@ def draw_dungeon(bg, fnt): # ダンジョンを描画する
             if 0 <= dx and dx < DUNGEON_W and 0 <= dy and dy < DUNGEON_H:
                 if dungeon[dy][dx] == 3:
                     bg.blit(imgFloor[dungeon[dy][dx]], [X, Y])
+                if dungeon[dy][dx] == 9:
+                    bg.blit(imgWall, [X, Y-40])
+                    if dy >= 1 and dungeon[dy-1][dx] == 9:
+                        bg.blit(imgWall2, [X, Y-80])
+            if x == 0 and y == 0: # 主人公キャラの表示
+                bg.blit(imgPlayer[pl_a], [X, Y-40])
+    bg.blit(imgDark, [0, 0]) # 四隅が暗闇の画像を重ねる
+    draw_para(bg, fnt) # 主人公の能力を表示
 
 
 def put_event(): # 床にイベントを配置する
@@ -262,7 +270,23 @@ def draw_text(bg, txt, x, y, fnt, col): # 影付き文字の表示
     bg.blit(sur, [x+1, y+2])
     sur = fnt.render(txt, True, col)
     bg.blit(sur, [x, y])
-            
+
+def draw_para(bg, fnt): # 主人公の能力を表示
+    X = 30
+    Y = 600
+    bg.blit(imgPara, [X, Y])
+    col = WHITE
+    if pl_life < 10 and tmr%2 == 0:
+        col = RED
+    draw_text(bg, "{}/{}".format(pl_life, pl_lifemax), X+128, Y+6, fnt, col)
+    draw_text(bg, str(pl_str), X+128, Y+33, fnt, WHITE)
+    col = WHITE
+    if food == 0 and tmr%2 == 0:
+        col = RED
+    draw_text(bg, str(food), X+128, Y+60, fnt, col)
+    draw_text(bg, str(potion), X+266, Y+6, fnt, WHITE)
+    draw_text(bg, str(blazegem), X+266, Y+33, fnt, WHITE)
+
 def main():
     global speed, idx, tmr, floor, fl_max, welcome
     global pl_a, pl_lifemax, pl_life, pl_str, food, potion, blazegem
@@ -328,6 +352,10 @@ def main():
         elif idx == 1: # プレイヤーの移動
             move_player(key)
             draw_dungeon(screen, fontS)
+            draw_text(screen, "floor {} ({},{})".format(floor, pl_x, pl_y), 60, 40, fontS, WHITE)
+            if welcome > 0:
+                welcome = welcome - 1
+                draw_text(screen, "Welcome to floor {}.".format(floor), 300, 180, font, CYAN)
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
