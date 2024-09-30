@@ -2,16 +2,15 @@ import pygame
 import sys
 import random
 from pygame.locals import *
-import pygame.tests 
 
-#色の定義
+# 色の定義
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-CYAN = (0, 255, 255)
-BLINK = [(224, 255, 255), (192, 240, 255), (128, 224, 255), (64, 192, 255), (128, 224, 255), (192, 240, 255)]
+BLACK = (  0,   0,   0)
+RED   = (255,   0,   0)
+CYAN  = (  0, 255, 255)
+BLINK = [(224, 255, 255), (192, 240, 255), (128, 224, 255), ( 64, 192, 255), (128, 224, 255), (192, 240, 255)]
 
-#画像の読み込み
+# 画像の読み込み
 imgTitle = pygame.image.load("image/title.png")
 imgWall = pygame.image.load("image/wall.png")
 imgWall2 = pygame.image.load("image/wall2.png")
@@ -48,7 +47,7 @@ imgEffect = [
     pygame.image.load("image/effect_b.png")
 ]
 
-#変数の宣言
+# 変数の宣言
 speed = 1
 idx = 0
 tmr = 0
@@ -81,8 +80,11 @@ dmg_eff = 0
 btl_cmd = 0
 
 COMMAND = ["[A]ttack", "[P]otion", "[B]laze gem", "[R]un"]
-TRE_NAME = ["Potion", "Blaze gem", "Food spoiled", "Food +20", "Food +100"]
-EMY_NAME = ["Green slime", "Red slime", "Axe beast", "Ogre", "Sword man", "Death hornet", "Signal slime", "Devil plant", "Twin killer", "Hell"]
+TRE_NAME = ["Potion", "Blaze gem", "Food spoiled.", "Food +20", "Food +100"]
+EMY_NAME = [
+    "Green slime", "Red slime", "Axe beast", "Ogre", "Sword man", "Death hornet",
+    "Signal slime", "Devil plant", "Twin killer", "Hell"
+    ]
 
 MAZE_W = 11
 MAZE_H = 9
@@ -97,7 +99,7 @@ for y in range(DUNGEON_H):
     dungeon.append([0]*DUNGEON_W)
 
 def make_dungeon(): # ダンジョンの自動生成
-    XP = [0, 1, 0, -1]
+    XP = [ 0, 1, 0, -1]
     YP = [-1, 0, 1, 0]
     # 周りの壁
     for x in range(MAZE_W):
@@ -136,9 +138,9 @@ def make_dungeon(): # ダンジョンの自動生成
                 if random.randint(0, 99) < 20: # 部屋を作る
                     for ry in range(-1, 2):
                         for rx in range(-1, 2):
-                            dungeon[dy+ry][dx+rx] == 0
+                            dungeon[dy+ry][dx+rx] = 0
                 else: # 通路を作る
-                    dungeon[dy][dx] == 0
+                    dungeon[dy][dx] = 0
                     if maze[y-1][x] == 0:
                         dungeon[dy-1][dx] = 0
                     if maze[y+1][x] == 0:
@@ -356,6 +358,33 @@ def main():
             if welcome > 0:
                 welcome = welcome - 1
                 draw_text(screen, "Welcome to floor {}.".format(floor), 300, 180, font, CYAN)
+
+        elif idx == 2: # 画面切り替え
+            draw_dungeon(screen, fontS)
+            if 1 <= tmr and tmr <= 5:
+                h = 80*tmr
+                pygame.draw.rect(screen, BLACK, [0, 0, 880, h])
+                pygame.draw.rect(screen, BLACK, [0, 720-h, 880, h])
+            if tmr == 5:
+                floor = floor + 1
+                if floor > fl_max:
+                    fl_max = floor
+                welcome = 15
+                make_dungeon()
+                put_event()
+            if 6 <= tmr and tmr <= 9:
+                h = 80*(10-tmr)
+                pygame.draw.rect(screen, BLACK, [0, 0, 880, h])
+                pygame.draw.rect(screen, BLACK, [0, 720-h, 880, h])
+            if tmr == 10:
+                idx = 1
+
+        elif idx == 3: # アイテム入手もしくはトラップ
+            draw_dungeon(screen, fontS)
+            screen.blit(imgItem[treasure], [320, 220])
+            draw_text(screen, TRE_NAME[treasure], 380, 240, font, WHITE)
+            if tmr == 10:
+                idx = 1
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
