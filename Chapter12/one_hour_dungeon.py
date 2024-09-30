@@ -170,7 +170,6 @@ def draw_dungeon(bg, fnt): # ダンジョンを描画する
     bg.blit(imgDark, [0, 0]) # 四隅が暗闇の画像を重ねる
     draw_para(bg, fnt) # 主人公の能力を表示
 
-
 def put_event(): # 床にイベントを配置する
     global pl_x, pl_y, pl_d, pl_a
     # 階段の配置
@@ -195,8 +194,8 @@ def put_event(): # 床にイベントを配置する
         pl_y = random.randint(3, DUNGEON_H-4)
         if(dungeon[pl_y][pl_x] == 0):
             break
-        pl_d = 1
-        pl_a = 2
+    pl_d = 1
+    pl_a = 2
 
 def move_player(key): # 主人公の移動
     global idx, tmr, pl_x, pl_y, pl_d, pl_a, pl_life, food, potion, blazegem, treasure
@@ -289,7 +288,7 @@ def draw_para(bg, fnt): # 主人公の能力を表示
     draw_text(bg, str(potion), X+266, Y+6, fnt, WHITE)
     draw_text(bg, str(blazegem), X+266, Y+33, fnt, WHITE)
 
-def main():
+def main(): # メイン処理
     global speed, idx, tmr, floor, fl_max, welcome
     global pl_a, pl_lifemax, pl_life, pl_str, food, potion, blazegem
     global emy_life, emy_step, emy_blink, dmg_eff
