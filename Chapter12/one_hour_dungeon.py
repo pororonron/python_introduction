@@ -159,7 +159,7 @@ def draw_dungeon(bg, fnt): # ダンジョンを描画する
             dx = pl_x + x
             dy = pl_y + y
             if 0 <= dx and dx < DUNGEON_W and 0 <= dy and dy < DUNGEON_H:
-                if dungeon[dy][dx] == 3:
+                if dungeon[dy][dx] <= 3:
                     bg.blit(imgFloor[dungeon[dy][dx]], [X, Y])
                 if dungeon[dy][dx] == 9:
                     bg.blit(imgWall, [X, Y-40])
@@ -187,7 +187,7 @@ def put_event(): # 床にイベントを配置する
         x = random.randint(3, DUNGEON_W-4)
         y = random.randint(3, DUNGEON_H-4)
         if(dungeon[y][x] == 0):
-            dungeon[y][x] = random.choice({1, 2, 2, 2, 2})
+            dungeon[y][x] = random.choice([1, 2, 2, 2, 2])
     # プレイヤーの初期位置
     while True:
         pl_x = random.randint(3, DUNGEON_W-4)
@@ -384,6 +384,21 @@ def main(): # メイン処理
             draw_text(screen, TRE_NAME[treasure], 380, 240, font, WHITE)
             if tmr == 10:
                 idx = 1
+
+        elif idx == 9: # ゲームオーバー
+            if tmr <= 30:
+                PL_TURN = [2, 4, 0, 6]
+                pl_a = PL_TURN[tmr%4]
+                if tmr == 30:
+                    pl_a = 8 # 倒れた絵
+                draw_dungeon(screen, fontS)
+            elif tmr == 31:
+                se[3].play()
+                draw_text(screen, "You died.", 360, 240, font, RED)
+                draw_text(screen, "Game over.", 360, 380, font, RED)
+            elif tmr == 100:
+                idx = 0
+                tmr = 0
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
