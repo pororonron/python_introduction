@@ -288,6 +288,20 @@ def draw_para(bg, fnt): # 主人公の能力を表示
     draw_text(bg, str(potion), X+266, Y+6, fnt, WHITE)
     draw_text(bg, str(blazegem), X+266, Y+33, fnt, WHITE)
 
+def init_battle(): # 戦闘に入る準備をする
+    global imgEnemy, emy_name, emy_lifemax, emy_life, emy_str, emy_x, emy_y
+    typ = random.randint(0, floor)
+    if floor >= 10:
+        typ = random.randint(0, 9)
+    lev = random.randint(1, floor)
+    imgEnemy = pygame.image.load("image/enemy"+str(typ)+".png")
+    emy_name = EMY_NAME[typ] + " LV" + str(lev)
+    emy_lifemax = 60*(typ+1) + (lev-1)*10
+    emy_life = emy_lifemax
+    emy_str = int(emy_lifemax/8)
+    emy_x = 440-imgEnemy.get_width()/2
+    emy_y = 560-imgEnemy.get_height()
+
 def main(): # メイン処理
     global speed, idx, tmr, floor, fl_max, welcome
     global pl_a, pl_lifemax, pl_life, pl_str, food, potion, blazegem
@@ -399,6 +413,12 @@ def main(): # メイン処理
             elif tmr == 100:
                 idx = 0
                 tmr = 0
+
+        elif idx == 10: # 戦闘開始
+            if tmr == 1:
+                pygame.mixer.music.load("sound/ohd_bgm_battle.ogg")
+                pygame.mixer.music.play(-1)
+                init_battle()
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
