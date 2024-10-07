@@ -302,6 +302,36 @@ def init_battle(): # 戦闘に入る準備をする
     emy_x = 440-imgEnemy.get_width()/2
     emy_y = 560-imgEnemy.get_height()
 
+def draw_bar(bg, x, y, w, h, val, ma): # 敵の体力を表示するバー
+    pygame.draw.rect(bg, WHITE, [x-2, y-2, w+4, h+4]) # 白枠
+    pygame.draw.rect(bg, BLACK, [x, y, w, h])
+    if val > 0:
+        pygame.draw.rect(bg, RED, [x, y, w*val/ma, h])
+
+def draw_battle(bg, fnt): # 戦闘画面の描画
+    global emy_blink, dmg_eff
+    bx = 0
+    by = 0
+    if dmg_eff > 0:
+        dmg_eff = dmg_eff - 1
+        bx = random.randint(-20, 20)
+        by = random.randint(-10, 10)
+    bg.blit(imgBtlBG, [bx, by])
+    if emy_life > 0 and emy_blink%2 == 0:
+        bg.blit(imgEnemy, [emy_x, emy_y+emy_step])
+    draw_bar(bg, 340, 580, 200, 10, emy_life, emy_lifemax)
+    if emy_blink > 0:
+        emy_blink = emy_blink - 1
+    for i in range(10): # 戦闘メッセージの表示
+        draw_text(bg, message[i], 600, 100+i*50, fnt, WHITE)
+    draw_para(bg, fnt) # 主人公の能力を表示
+
+# 戦闘メッセージの表示処理
+message = [""]*10
+def init_message():
+    for i in range(10):
+        message[i] = ""
+
 def main(): # メイン処理
     global speed, idx, tmr, floor, fl_max, welcome
     global pl_a, pl_lifemax, pl_life, pl_str, food, potion, blazegem
@@ -419,6 +449,19 @@ def main(): # メイン処理
                 pygame.mixer.music.load("sound/ohd_bgm_battle.ogg")
                 pygame.mixer.music.play(-1)
                 init_battle()
+                init_message()
+            elif tmr <= 4:
+                bx = (4-tmr)*220
+                by = 0
+                screen.blit(imgBtlBG, [bx, by])
+                draw_text(screen, "Encounter!", 350, 200, font, WHITE)
+            elif tmr <= 16:
+                draw_battle(screen, fontS)
+                draw_text(screen, emy_name+" appear!", 300, 200, font, WHITE)
+            else:
+                idx = 11
+                tmr = 0
+
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
     
