@@ -460,7 +460,8 @@ def main(): # メイン処理
                 draw_text(screen, emy_name+" appear!", 300, 200, font, WHITE)
             else:
                 idx = 11
-                tmr = 0
+                tmr = 1
+                #test
 
 
         draw_text(screen, "[S]peed "+str(speed), 740, 40, fontS, WHITE)
